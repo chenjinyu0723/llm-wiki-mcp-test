@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>LLM Wiki MCP 验证台</title>
+  <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <div><h1>LLM Wiki MCP 验证台</h1><p>通过 Streamable HTTP 调用公开与管理员 MCP</p></div>
+    <button id="connectionToggle" class="secondary">连接配置</button>
+  </header>
+
+  <aside id="connectionPanel" class="connection-panel hidden">
+    <h2>连接与模型</h2>
+    <label>公开 MCP URL<input id="publicMcpUrl" value="http://127.0.0.1:8030/mcp"></label>
+    <label>管理员 MCP URL<input id="adminMcpUrl" value="http://127.0.0.1:8031/mcp"></label>
+    <label>对话模型 Base URL<input id="llmBaseUrl" placeholder="https://your-server/v1"></label>
+    <label>API Key<input id="llmApiKey" type="password" autocomplete="off"></label>
+    <label>模型名称<input id="llmModel" placeholder="your-model"></label>
+    <label class="check"><input id="passModelToMcp" type="checkbox" checked>将对话模型配置通过 Header 传给 MCP</label>
+    <button id="testConnection">测试两个 MCP</button><span id="connectionStatus" class="hint"></span>
+    <p class="hint">配置只保存在当前浏览器会话中；管理员 MCP 建议只监听本机。</p>
+  </aside>
+
+  <nav class="tabs"><button data-tab="manage" class="active">知识库管理</button><button data-tab="chat">多轮对话</button></nav>
+
+  <main>
+    <section id="manageTab" class="tab-panel">
+      <div class="grid two">
+        <article class="card">
+          <div class="card-title"><h2>知识库</h2><button id="refreshBases" class="secondary">刷新</button></div>
+          <select id="manageBase"></select>
+          <div class="inline-form"><input id="newBaseName" placeholder="新知识库名称"><input id="newBaseDescription" placeholder="说明"><button id="createBase">创建</button></div>
+          <p id="baseStatus" class="hint"></p>
+        </article>
+        <article class="card">
+          <h2>导入资料</h2>
+          <input id="uploadFiles" type="file" multiple accept=".pdf,.doc,.docx,.md,.ppt,.pptx,.txt">
+          <button id="uploadButton">上传并导入</button>
+          <p class="hint">验证项目与管理员 MCP 同机时，上传文件会暂存后通过绝对路径交给 MCP。</p>
+          <pre id="uploadResult" class="log"></pre>
+        </article>
+      </div>
+
+      <article class="card">
+        <div class="card-title"><h2>文档与编译</h2><div><button id="refreshDocuments" class="secondary">刷新文档</button><button id="compileButton">编译待处理</button><button id="retryButton" class="secondary">重试失败项</button></div></div>
+        <table><thead><tr><th>文件</th><th>解析器</th><th>状态</th><th>编译</th><th>操作</th></tr></thead><tbody id="documentsBody"></tbody></table>
+        <pre id="compileLog" class="log"></pre>
+      </article>
+
+      <article class="card">
+        <div class="card-title"><h2>Wiki 浏览</h2><div><select id="wikiType"><option value="">全部类型</option><option value="concept">概念</option><option value="entity">实体</option><option value="query">问答</option></select><button id="refreshWiki" class="secondary">刷新 Wiki</button></div></div>
+        <div class="wiki-layout"><div id="wikiList" class="wiki-list"></div><article id="wikiDetail" class="wiki-detail"><p class="hint">点击左侧页面查看正文。</p></article></div>
+      </article>
+    </section>
+
+    <section id="chatTab" class="tab-panel hidden">
+      <div class="chat-layout">
+        <aside class="chat-sidebar card"><div class="card-title"><h2>对话</h2><button id="newConversation" class="secondary">新建</button></div><div id="conversationList"></div></aside>
+        <section class="chat-main card">
+          <div class="chat-toolbar"><div><strong>知识库范围</strong><div id="chatBases" class="checks"></div></div><label class="check"><input id="chatIncludeQuery" type="checkbox">包含问答页</label><label class="check"><input id="chatIncludeTables" type="checkbox">引用表格</label></div>
+          <div class="chat-toolbar"><button id="chatSearchWiki" class="secondary">检索可选 Wiki</button><span class="hint">可手动勾选页面；不勾选时发送问题会自动检索。</span></div>
+          <div id="chatWikiChoices" class="chat-wiki-choices"></div>
+          <div id="chatMessages" class="messages"></div>
+          <div class="composer"><textarea id="questionInput" rows="3" placeholder="输入问题，Enter 发送，Shift+Enter 换行"></textarea><div><button id="stopChat" class="secondary" disabled>停止</button><button id="sendQuestion">发送</button></div></div>
+        </section>
+      </div>
+    </section>
+  </main>
+  <script src="/static/app.js" defer></script>
+</body>
+</html>
